@@ -2,6 +2,14 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const _ = require('lodash');
 
+const DEV_MODE = false;
+const DEV_MODE_SIZE = 1000;
+
+let users;
+const userSimilarityScores = [];
+let companies;
+const companySimilarityScores = [];
+
 function getCSVData(path) {
   return new Promise((resolve) => {
     const results = [];
@@ -27,7 +35,7 @@ function getJobs() {
  * 1. Create a list of users based on reactions
  *    - Sort reactions in order first as only the last reaction by a user to a job matters
  *    - Find uniq user-to-job combinations only
- *    - Remove entries with where { direction: false }
+ *    - Filter entries where { direction: true }
  *    - Find unique users
  * 2. Each user has a likedJobs array filled with liked job IDs
  *    - Find liked jobs for each unique user
@@ -41,7 +49,47 @@ function getJobs() {
  * @param {String} time - timestamp
  */
 function processReactions(reactions) {
-  console.log('reactions', reactions.length);
+  if (DEV_MODE) {
+    reactions = _.take(reactions, DEV_MODE_SIZE);
+  }
+
+  const likes = _
+    .chain(reactions)
+    .orderBy(['time'], ['desc'])
+    .uniqWith((a, b) => {
+      return a.user_id === b.user_id && a.job_id === b.job_id;
+    })
+    .filter({ direction: 'true' })
+    .value();
+
+  users = _.map(_.uniqBy(likes, 'user_id'), (like) => {
+    return { user_id: like.user_id };
+  });
+
+  _.forEach(users, (user) => {
+    user.liked_jobs = _.map(_.filter(likes, { user_id: user.user_id }), 'job_id');
+  });
+
+  users = _.mapValues(_.keyBy(users, 'user_id'), 'liked_jobs');
+
+  const user_ids = _.keys(users);
+
+  _.forEach(user_ids, (user_id_a, i) => {
+    _.forEach(user_ids, (user_id_b, j) => {
+      if (j <= i) {
+        return;
+      }
+
+      userSimilarityScores.push({
+        user_ids: [user_id_a, user_id_b],
+        score: _.intersection(users[user_id_a], users[user_id_b]).length
+      });
+    });
+  });
+
+  const mostSimilarUsers = _.maxBy(userSimilarityScores, 'score');
+
+  console.log(`Users ${mostSimilarUsers.user_ids.join(' and ')} have a similarity score of ${mostSimilarUsers.score}`);
 }
 
 /**
@@ -55,15 +103,21 @@ function processReactions(reactions) {
  * @param {String} company_id - company ID
  */
 function processJobs(jobs) {
+  if (DEV_MODE) {
+    jobs = _.take(jobs, DEV_MODE_SIZE);
+  }
+
   console.log('jobs', jobs.length);
 }
 
 getReactions().then((reactions) => {
   processReactions(reactions);
 
+  return;
+
   return getJobs();
 }).then((jobs) => {
-  processJobs(jobs);
+  // processJobs(jobs);
 });
 
 
