@@ -26,6 +26,7 @@ The reaction data consists of four columns:
 **Task**: The similarity score between two users is the number of jobs which they both like. Find the two users with the highest similarity.
 
 **Answer**: Users 1791 and 5193 have a similarity score of 181
+
 **Time taken**: 1h24m
 
 ### Task 2
@@ -35,6 +36,7 @@ In the `data` folder there is an additional CSV file called `jobs.csv`. It conta
 **Task**: The similarity score between two companies is the number of users who like at least one job at both companies. Using both the `reactions.csv` and `jobs.csv` data, find the two companies with the highest similarity score.
 
 **Answer**: Companies 46 and 92 have a similarity score of 97
+
 **Time taken**: 24m
 
 ### Task 3
