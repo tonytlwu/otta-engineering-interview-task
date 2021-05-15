@@ -118,7 +118,7 @@ function processJobs(jobs) {
       return {
         company_id,
         jobs: _.map(_.filter(jobs, { company_id }), 'job_id')
-      }
+      };
     })
     .value();
 

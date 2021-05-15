@@ -1,3 +1,6 @@
 {
-  "extends": "fliplet"
+  "extends": "fliplet",
+  "parserOptions": {
+    "ecmaVersion": 8
+  }
 }
