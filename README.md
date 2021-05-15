@@ -33,7 +33,7 @@ In the `data` folder there is an additional CSV file called `jobs.csv`. It conta
 
 **Task**: The similarity score between two companies is the number of users who like at least one job at both companies. Using both the `reactions.csv` and `jobs.csv` data, find the two companies with the highest similarity score.
 
-**Answer**: _[Enter the two company IDs & their similarity score here]_
+**Answer**: Companies 46 and 92 have a similarity score of 97
 
 ### Task 3
 
@@ -57,8 +57,8 @@ We don't think it's fair to ask you to build something with a UI, as we know thi
 
 Once you've completed all of the above tasks, make sure:
 
-- [ ] You've committed all of the code used, and your edited answers, to the `main` branch
-- [ ] You've pushed the changes to your repo
-- [ ] You add `XavKearney` and `shfranklin` as contributors for your personal repo, and send a link to the repo in an email or Otta message to us
+- [x] You've committed all of the code used, and your edited answers, to the `main` branch
+- [x] You've pushed the changes to your repo
+- [ ] ~You add `XavKearney` and `shfranklin` as contributors for your personal repo, and send a link to the repo in an email or Otta message to us~
 
 Good luck!

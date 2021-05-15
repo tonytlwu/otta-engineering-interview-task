@@ -6,6 +6,7 @@ const DEV_MODE = false;
 const DEV_MODE_SIZE = 1000;
 
 let users;
+let user_ids;
 const userSimilarityScores = [];
 let companies;
 const companySimilarityScores = [];
@@ -72,10 +73,11 @@ function processReactions(reactions) {
 
   users = _.mapValues(_.keyBy(users, 'user_id'), 'liked_jobs');
 
-  const user_ids = _.keys(users);
+  user_ids = _.keys(users);
 
   _.forEach(user_ids, (user_id_a, i) => {
     _.forEach(user_ids, (user_id_b, j) => {
+      // Don't compare users that are the same or have already been compared
       if (j <= i) {
         return;
       }
@@ -107,17 +109,53 @@ function processJobs(jobs) {
     jobs = _.take(jobs, DEV_MODE_SIZE);
   }
 
-  console.log('jobs', jobs.length);
+  companies = _
+    .chain(jobs)
+    .uniqBy('company_id')
+    .map((job) => {
+      const company_id = job.company_id;
+
+      return {
+        company_id,
+        jobs: _.map(_.filter(jobs, { company_id }), 'job_id')
+      }
+    })
+    .value();
+
+  companies = _.mapValues(_.keyBy(companies, 'company_id'), 'jobs');
+
+  const company_ids = _.keys(companies);
+
+  _.forEach(company_ids, (company_id_a, i) => {
+    _.forEach(company_ids, (company_id_b, j) => {
+      // Don't compare companies that are the same or have already been compared
+      if (j <= i) {
+        return;
+      }
+
+      const score = _.keys(_.pickBy(users, (liked_jobs) => {
+        return _.intersection(companies[company_id_a], liked_jobs).length
+          && _.intersection(companies[company_id_b], liked_jobs).length;
+      })).length;
+
+      companySimilarityScores.push({
+        company_ids: [company_id_a, company_id_b],
+        score
+      });
+    });
+  });
+
+  const mostSimilarCompanies = _.maxBy(companySimilarityScores, 'score');
+
+  console.log(`Companies ${mostSimilarCompanies.company_ids.join(' and ')} have a similarity score of ${mostSimilarCompanies.score}`);
 }
 
 getReactions().then((reactions) => {
   processReactions(reactions);
 
-  return;
-
   return getJobs();
 }).then((jobs) => {
-  // processJobs(jobs);
+  processJobs(jobs);
 });
 
 
